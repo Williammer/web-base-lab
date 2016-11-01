@@ -17,6 +17,7 @@ function digestProvider(provider) {
     }
 }
 
+// may call digest when under certain change updates or by polling.
 function digest() {
     providers.forEach(digestProvider)
 }

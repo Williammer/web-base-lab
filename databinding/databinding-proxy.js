@@ -1,5 +1,13 @@
 'use strict'
 
+// export API functions
+const dataBinding = {
+    observe,
+    unobserve,
+    observable,
+    isObservable
+}
+
 /*
  * nextTick
  */
@@ -8,15 +16,15 @@ let currTask
 
 if (typeof MutationObserver !== 'undefined') {
     let counter = 0
-    const observer = new MutationObserver(onMutation)
-    const textNode = document.createTextNode(String(counter))
-    observer.observe(textNode, { characterData: true })
-
-    function onMutation() {
+    const onMutation = () => {
         if (currTask) {
             currTask()
         }
     }
+    const observer = new MutationObserver(onMutation)
+    const textNode = document.createTextNode(String(counter))
+
+    observer.observe(textNode, { characterData: true })
 
     mutateWithTask = function mutateWithTask() {
         counter = (counter + 1) % 2
@@ -24,7 +32,7 @@ if (typeof MutationObserver !== 'undefined') {
     }
 }
 
-function nextTick(task) {
+const nextTick = (task) => {
     currTask = task
     if (mutateWithTask) {
         mutateWithTask()
@@ -44,12 +52,6 @@ const targets = new WeakMap()
 const observerSet = new Set()
 let currentObserver
 
-const dataBinding = {
-    observe,
-    unobserve,
-    observable,
-    isObservable
-}
 
 function observe(fn) {
     if (typeof fn !== 'function') {
