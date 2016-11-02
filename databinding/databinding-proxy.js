@@ -57,6 +57,7 @@ function observe(fn) {
     if (typeof fn !== 'function') {
         throw new TypeError('first argument must be a function')
     }
+
     if (!fn[observing]) {
         fn[observing] = true
         fn[unobserverSet] = new Set()
@@ -73,6 +74,7 @@ function unobserve(fn) {
         fn[unobserverSet].forEach(_runUnobserver)
         fn[unobserverSet] = undefined
     }
+
     fn[observing] = false
 }
 
@@ -95,6 +97,7 @@ function observable(obj) {
 
     obj[proxy] = new Proxy(obj, { get: __get, set: __set, deleteProperty: __deleteProperty })
     targets.set(obj, new Map())
+
     return obj[proxy]
 }
 
@@ -102,6 +105,7 @@ function isObservable(obj) {
     if (typeof obj !== 'object') {
         throw new TypeError('first argument must be an object')
     }
+
     return (obj[proxy] === true)
 }
 
@@ -113,7 +117,9 @@ function __get(target, key, receiver) {
     } else if (key === '$raw') {
         return target
     }
+
     const result = Reflect.get(target, key, receiver)
+
     if (currentObserver) {
         _registerObserver(target, key, currentObserver)
         if (typeof result === 'object' && !(result instanceof Date)) {
@@ -123,6 +129,7 @@ function __get(target, key, receiver) {
     if (typeof result === 'object' && typeof result[proxy] === 'object') {
         return result[proxy]
     }
+
     return result
 }
 
@@ -130,6 +137,7 @@ function __set(target, key, value, receiver) {
     if (targets.get(target).has(key)) {
         targets.get(target).get(key).forEach(_queueObserver)
     }
+
     return Reflect.set(target, key, value, receiver)
 }
 
@@ -137,15 +145,18 @@ function __deleteProperty(target, key) {
     if (targets.get(target).has(key)) {
         targets.get(target).get(key).forEach(_queueObserver)
     }
+
     return Reflect.deleteProperty(target, key)
 }
 
 function _registerObserver(target, key, observer) {
     let observersForKey = targets.get(target).get(key)
+
     if (!observersForKey) {
         observersForKey = new Set()
         targets.get(target).set(key, observersForKey)
     }
+
     if (!observersForKey.has(observer)) {
         observersForKey.add(observer)
         observer[unobserverSet].add(() => observersForKey.delete(observer))
@@ -156,6 +167,7 @@ function _queueObserver(observer) {
     if (observerSet.size === 0) {
         nextTick(_runObservers)
     }
+
     observerSet.add(observer)
 }
 
