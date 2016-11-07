@@ -3,7 +3,7 @@ const proxyCache = new WeakMap()
 function compileCode(src) {
     // 1. create a reusable sandbox function env.
     // 2. use with to protect the global access(can't hv 'use strict')
-    const code new Function("sandbox", `with(sandbox){ ${src} }`)
+    const code = new Function("sandbox", `with(sandbox){ ${src} }`)
 
     return function(sandbox) {
         // 5. use WeakMap as cache for proxy
