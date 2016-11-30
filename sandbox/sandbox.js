@@ -21,8 +21,13 @@ function has(target, key) {
     return true
 }
 
-function get(target, key) {
+function get(target, key, receiver) {
     // 4. The Symbol.unscopables is used to specify an object value of whose own and inherited property names are excluded from the 'with' environment bindings of the associated object.
     if (key === Symbol.unscopables) return undefined
-    return target[key]
+    return Refect.get(target, key, receiver)
 }
+
+/**
+ * further optimization:
+    1. extract dep of sandbox
+ */
