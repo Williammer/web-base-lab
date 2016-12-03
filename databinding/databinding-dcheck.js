@@ -1,23 +1,25 @@
+/*
+ * TODO: can unify API with the other 2 solutions?
+ */
+
 'use strict'
 
-observe(provider, 'message', message => {
-    consumer.innerHTML = message
-})
+const dataBinding = {
+    observe(provider, prop, handler) {
+        provider._handlers[prop] = handler
+    },
 
-function observe(provider, prop, handler) {
-    provider._handlers[prop] = handler
-}
-
-function digestProvider(provider) {
-    for (let prop in provider._handlers) {
-        if (provider._prevValues[prop] !== provider[prop]) {
-            provider._prevValues[prop] = provider[prop]
-            handler(provider[prop])
+    digestProvider(provider) {
+        for (let prop in provider._handlers) {
+            if (provider._prevValues[prop] !== provider[prop]) {
+                provider._prevValues[prop] = provider[prop]
+                handler(provider[prop])
+            }
         }
-    }
-}
+    },
 
-// may call digest when under certain change updates or by polling.
-function digest() {
-    providers.forEach(digestProvider)
+    // may call digest when under certain change updates or by polling.
+    digest() {
+        providers.forEach(digestProvider)
+    }
 }
