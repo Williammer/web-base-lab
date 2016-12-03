@@ -1,0 +1,29 @@
+{
+  "name": "web-base-lab",
+  "version": "0.0.1",
+  "description": "my web-base lab for experiments.",
+  "main": "*/index.html",
+  "scripts": {
+    "task": "node --harmony _task/experimentMgr.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Williammer/web-base-Lab.git"
+  },
+  "keywords": [
+    "web",
+    "experiments"
+  ],
+  "author": "WilliamHe",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Williammer/web-base-Lab/issues"
+  },
+  "homepage": "https://github.com/Williammer/web-base-Lab",
+  "devDependencies": {
+    "fs-extra": "^0.30.0",
+    "rollup": "^0.36.1",
+    "rollup-plugin-multi-entry": "^2.0.1"
+  },
+  "dependencies": {}
+}
