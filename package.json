@@ -21,7 +21,8 @@
   },
   "homepage": "https://github.com/Williammer/web-base-Lab",
   "devDependencies": {
-    "fs-extra": "^0.30.0",
+    "fs-extra": "^1.0.0",
+    "open": "0.0.5",
     "rollup": "^0.36.1",
     "rollup-plugin-multi-entry": "^2.0.1"
   },

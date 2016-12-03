@@ -1,4 +1,5 @@
 const fs = require("fs-extra"),
+    open = require("open"),
     action = process.argv[2],
     title = process.argv[3];
 
@@ -7,18 +8,23 @@ if (!title || !action) {
     return;
 }
 
-if (action == "rm") {
-    fs.remove(`./${title}`, function(err) {
+const targetFolder = `./${title}`,
+    targetHtml = `${targetFolder}/index.html`;
+
+if (action == "open") {
+    open(targetHtml, `Google Chrome`);
+
+} else if (action == "rm") {
+    fs.remove(targetFolder, function(err) {
         if (err) throw err;
 
         console.log(`remove '${title}' success!`)
     });
 
 } else if (action == "add") {
-    const tmplSrcPath = `./_sample`;
-    const solutionDstPath = `./${title}`;
+    const sampleFolder = `./_sample`;
 
-    fs.copy(tmplSrcPath, solutionDstPath, (err) => {
+    fs.copy(sampleFolder, targetFolder, (err) => {
         if (err) throw err;
 
         console.log(`'${title}' - rename and copy complete.`);
