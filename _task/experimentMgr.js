@@ -1,7 +1,8 @@
 const fs = require("fs-extra"),
     open = require("open"),
     action = process.argv[2],
-    title = process.argv[3];
+    title = process.argv[3],
+    copyTitle = process.argv[4];
 
 if (!title || !action) {
     throw `invalid input(action / title) provided.`;
@@ -21,6 +22,16 @@ if (action == "open") {
         console.log(`remove '${title}' success!`)
     });
 
+} else if (action == "copy") {
+    if (!copyTitle) {
+        throw `invalid input(copyTitle) provided.`;
+    }
+
+    fs.copy(`./${copyTitle}`, targetFolder, (err) => {
+        if (err) throw err;
+
+        console.log(`'${title}' - rename and copy complete.`);
+    });
 } else if (action == "add") {
     const sampleFolder = `./_sample`;
 
