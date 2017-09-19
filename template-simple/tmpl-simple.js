@@ -1,4 +1,3 @@
-
 // A simple template engine implemented by 'new Function' and 'with'
 (function() {
     var cache = {};
