@@ -4,7 +4,7 @@
   "description": "my web-base lab for experiments.",
   "main": "*/index.html",
   "scripts": {
-    "task": "node --harmony _task/experimentMgr.js"
+    "task": "node --harmony _task/taskHandler.js"
   },
   "repository": {
     "type": "git",
