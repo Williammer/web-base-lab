@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>MVVM experiment</title>
+</head>
+
+<body>
+	<div id="test-view">
+		<h1 id="m-v-0" w-model="dat.title"></h1>
+	    <p id="m-v-1" w-model="dat.description"></p>
+
+	    <label for="vm-1" w-model="dat.canvas"></label>
+	    <input id="vm-1" type="text" w-bind="dat.canvas" />
+
+	    <!--
+	    <span id="vm-2">{{dat.canvas}}</span>
+		<ul>
+		<li w-for="count in dat.numCount" w-model="count"></li>
+		</ul>
+	     -->
+     </div>
+</body>
+
+</html>
+<script type="text/javascript" src="compile.js"></script>
+<script type="text/javascript" src="binding.js"></script>
+<script type="text/javascript" src="dep.js"></script>
+
+<script type="text/javascript">
+	new W({
+		id: '#test-view',
+		data: {
+			dat: {
+				title: 'MVVM experiment',
+				description: 'reinvent the MVVM for fundamentals',
+				canvas: 'free to update...',
+				numCount: [1,2,3,4,5,6,7]
+			}
+		},
+		computed: {
+			sumCount: function() {
+				return this.dat.numCount.reduce(function(accumulator, currentVal){
+					return accumulator + currentVal;
+				});
+			}
+		}
+		/* handlers: */
+	});
+
+</script>
