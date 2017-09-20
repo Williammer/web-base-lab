@@ -23,8 +23,6 @@
   "devDependencies": {
     "fs-extra": "^1.0.0",
     "open": "0.0.5",
-    "rollup": "^0.36.1",
-    "rollup-plugin-multi-entry": "^2.0.1"
   },
   "dependencies": {}
 }
