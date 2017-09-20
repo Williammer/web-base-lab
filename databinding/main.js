@@ -1,14 +1,14 @@
 let provider = dataBinding.observable({
-        greeting: "Hello",
-        name: "William"
-    }),
-    producer = document.getElementById("producer"),
-    consumer = document.getElementById("consumer")
+    greeting: "Hello",
+    name: "William"
+  }),
+  producer = document.getElementById("producer"),
+  consumer = document.getElementById("consumer")
 
 dataBinding.observe(() => {
-    consumer.innerHTML = provider.greeting + " " + provider.name
+  consumer.innerHTML = provider.greeting + " " + provider.name
 })
 
 producer.onkeyup = (evt) => {
-    provider.name = evt.target.value
+  provider.name = evt.target.value
 }

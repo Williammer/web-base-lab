@@ -2,10 +2,10 @@
 
 // export API functions
 const dataBinding = {
-    observe,
-    unobserve,
-    observable,
-    isObservable
+  observe,
+  unobserve,
+  observable,
+  isObservable
 }
 
 /*
@@ -15,30 +15,30 @@ let mutateWithTask
 let currTask
 
 if (typeof MutationObserver !== 'undefined') {
-    let counter = 0
-    const onMutation = () => {
-        if (currTask) {
-            currTask()
-        }
+  let counter = 0
+  const onMutation = () => {
+    if (currTask) {
+      currTask()
     }
-    const observer = new MutationObserver(onMutation)
-    const textNode = document.createTextNode(String(counter))
+  }
+  const observer = new MutationObserver(onMutation)
+  const textNode = document.createTextNode(String(counter))
 
-    observer.observe(textNode, { characterData: true })
+  observer.observe(textNode, { characterData: true })
 
-    mutateWithTask = function mutateWithTask() {
-        counter = (counter + 1) % 2
-        textNode.data = String(counter)
-    }
+  mutateWithTask = function mutateWithTask() {
+    counter = (counter + 1) % 2
+    textNode.data = String(counter)
+  }
 }
 
 const nextTick = (task) => {
-    currTask = task
-    if (mutateWithTask) {
-        mutateWithTask()
-    } else {
-        Promise.resolve().then(task)
-    }
+  currTask = task
+  if (mutateWithTask) {
+    mutateWithTask()
+  } else {
+    Promise.resolve().then(task)
+  }
 }
 
 /*
@@ -54,142 +54,142 @@ let currentObserver
 
 
 function observe(fn) {
-    if (typeof fn !== 'function') {
-        throw new TypeError('first argument must be a function')
-    }
+  if (typeof fn !== 'function') {
+    throw new TypeError('first argument must be a function')
+  }
 
-    if (!fn[observing]) {
-        fn[observing] = true
-        fn[unobserverSet] = new Set()
-        _runObserver(fn)
-    }
+  if (!fn[observing]) {
+    fn[observing] = true
+    fn[unobserverSet] = new Set()
+    _runObserver(fn)
+  }
 }
 
 function unobserve(fn) {
-    if (typeof fn !== 'function') {
-        throw new TypeError('first argument must be a function')
-    }
+  if (typeof fn !== 'function') {
+    throw new TypeError('first argument must be a function')
+  }
 
-    if (fn[observing]) {
-        fn[unobserverSet].forEach(_runUnobserver)
-        fn[unobserverSet] = undefined
-    }
+  if (fn[observing]) {
+    fn[unobserverSet].forEach(_runUnobserver)
+    fn[unobserverSet] = undefined
+  }
 
-    fn[observing] = false
+  fn[observing] = false
 }
 
 function observable(obj) {
-    if (obj === undefined) {
-        obj = {}
-    }
+  if (obj === undefined) {
+    obj = {}
+  }
 
-    if (typeof obj !== 'object') {
-        throw new TypeError('first argument must be an object or undefined')
-    }
+  if (typeof obj !== 'object') {
+    throw new TypeError('first argument must be an object or undefined')
+  }
 
-    if (isObservable(obj)) {
-        return obj
-    }
+  if (isObservable(obj)) {
+    return obj
+  }
 
-    if (typeof obj[proxy] === 'object') {
-        return obj[proxy]
-    }
-
-    obj[proxy] = new Proxy(obj, { get: __get, set: __set, deleteProperty: __deleteProperty })
-    targets.set(obj, new Map())
-
+  if (typeof obj[proxy] === 'object') {
     return obj[proxy]
+  }
+
+  obj[proxy] = new Proxy(obj, { get: __get, set: __set, deleteProperty: __deleteProperty })
+  targets.set(obj, new Map())
+
+  return obj[proxy]
 }
 
 function isObservable(obj) {
-    if (typeof obj !== 'object') {
-        throw new TypeError('first argument must be an object')
-    }
+  if (typeof obj !== 'object') {
+    throw new TypeError('first argument must be an object')
+  }
 
-    return (obj[proxy] === true)
+  return (obj[proxy] === true)
 }
 
 
 // private/protected functions
 function __get(target, key, receiver) {
-    if (key === proxy) {
-        return true
-    } else if (key === '$raw') {
-        return target
-    }
+  if (key === proxy) {
+    return true
+  } else if (key === '$raw') {
+    return target
+  }
 
-    const result = Reflect.get(target, key, receiver)
+  const result = Reflect.get(target, key, receiver)
 
-    if (currentObserver) {
-        _registerObserver(target, key, currentObserver)
-        if (typeof result === 'object' && !(result instanceof Date)) {
-            return observable(result)
-        }
+  if (currentObserver) {
+    _registerObserver(target, key, currentObserver)
+    if (typeof result === 'object' && !(result instanceof Date)) {
+      return observable(result)
     }
-    if (typeof result === 'object' && typeof result[proxy] === 'object') {
-        return result[proxy]
-    }
+  }
+  if (typeof result === 'object' && typeof result[proxy] === 'object') {
+    return result[proxy]
+  }
 
-    return result
+  return result
 }
 
 function __set(target, key, value, receiver) {
-    if (targets.get(target).has(key)) {
-        targets.get(target).get(key).forEach(_queueObserver)
-    }
+  if (targets.get(target).has(key)) {
+    targets.get(target).get(key).forEach(_queueObserver)
+  }
 
-    return Reflect.set(target, key, value, receiver)
+  return Reflect.set(target, key, value, receiver)
 }
 
 function __deleteProperty(target, key) {
-    if (targets.get(target).has(key)) {
-        targets.get(target).get(key).forEach(_queueObserver)
-    }
+  if (targets.get(target).has(key)) {
+    targets.get(target).get(key).forEach(_queueObserver)
+  }
 
-    return Reflect.deleteProperty(target, key)
+  return Reflect.deleteProperty(target, key)
 }
 
 function _registerObserver(target, key, observer) {
-    let observersForKey = targets.get(target).get(key)
+  let observersForKey = targets.get(target).get(key)
 
-    if (!observersForKey) {
-        observersForKey = new Set()
-        targets.get(target).set(key, observersForKey)
-    }
+  if (!observersForKey) {
+    observersForKey = new Set()
+    targets.get(target).set(key, observersForKey)
+  }
 
-    if (!observersForKey.has(observer)) {
-        observersForKey.add(observer)
-        observer[unobserverSet].add(() => observersForKey.delete(observer))
-    }
+  if (!observersForKey.has(observer)) {
+    observersForKey.add(observer)
+    observer[unobserverSet].add(() => observersForKey.delete(observer))
+  }
 }
 
 function _queueObserver(observer) {
-    if (observerSet.size === 0) {
-        nextTick(_runObservers)
-    }
+  if (observerSet.size === 0) {
+    nextTick(_runObservers)
+  }
 
-    observerSet.add(observer)
+  observerSet.add(observer)
 }
 
 function _runObservers() {
-    try {
-        observerSet.forEach(_runObserver)
-    } finally {
-        observerSet.clear()
-    }
+  try {
+    observerSet.forEach(_runObserver)
+  } finally {
+    observerSet.clear()
+  }
 }
 
 function _runObserver(observer) {
-    if (observer[observing]) {
-        currentObserver = observer
-        try {
-            observer()
-        } finally {
-            currentObserver = undefined
-        }
+  if (observer[observing]) {
+    currentObserver = observer
+    try {
+      observer()
+    } finally {
+      currentObserver = undefined
     }
+  }
 }
 
 function _runUnobserver(unobserver) {
-    unobserver()
+  unobserver()
 }
