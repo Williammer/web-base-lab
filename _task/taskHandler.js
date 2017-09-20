@@ -12,7 +12,7 @@ if (!title || !action) {
 const targetFolder = `./${title}`,
     targetHtml = `${targetFolder}/index.html`;
 
-if (action == "open") {
+if (action == "run") {
     open(targetHtml, `Google Chrome`);
 
 } else if (action == "rm") {
