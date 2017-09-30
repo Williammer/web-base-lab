@@ -1,9 +1,9 @@
 const proxyCache = new WeakMap()
 
-function compileCode(src) {
+function compileCode(sourceCode) {
   // 1. create a reusable sandbox function env.
   // 2. use with to protect the global access(can't hv 'use strict')
-  const code = new Function("sandbox", `with(sandbox){ ${src} }`)
+  const code = new Function("sandbox", `with(sandbox){ ${sourceCode} }`)
 
   return function(sandbox) {
     // 5. use WeakMap as cache for proxy
@@ -29,5 +29,7 @@ function get(target, key, receiver) {
 
 /**
  * further optimization:
-    1. extract dep of sandbox
+    1. extract dep of sandbox ?
+
+    2. can we hv more flexibility on the compile?
  */
