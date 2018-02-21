@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Sandbox compile</title>
+</head>
+
+<body>
+  <textarea rows="30" cols="100" id="code"></textarea>
+  <button id="run">Run</button>
+<span>console.log(this.constructor)</span>
+<span id="output"></span>
+</body>
+
+</html>
+<script type="text/javascript" src="../src/sandbox.js"></script>
+<script>
+  const runBtn = document.getElementById('run');
+
+  runBtn.addEventListener('click', ()=> {
+    const code = document.getElementById('code').value;
+    compileCode(code)({console});
+  },false)
+</script>
+<!-- <script type="text/javascript" src="runTest.js"></script> -->
+<!-- <script type="text/javascript" src="main.js"></script> -->
