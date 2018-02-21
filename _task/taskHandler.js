@@ -5,43 +5,53 @@ const fs = require("fs-extra"),
   copyTitle = process.argv[4];
 
 if (!title || !action) {
-  throw `invalid input(action / title) provided.`;
+  throw "Invalid `action` or `title` provided.";
   return;
 }
 
 const targetFolder = `./${title}`,
   targetHtml = `${targetFolder}/index.html`;
 
-if (action == "run") {
-  open(targetHtml, `Google Chrome`);
+switch (action) {
+  case "run":
+    open(targetHtml, `Google Chrome`);
+    break;
 
-} else if (action == "rm") {
-  fs.remove(targetFolder, function(err) {
-    if (err) throw err;
+  case "rm": {
+    fs.remove(targetFolder, function(err) {
+      if (err) throw err;
 
-    console.log(`remove '${title}' success!`)
-  });
-
-} else if (action == "copy") {
-  if (!copyTitle) {
-    throw `invalid input(copyTitle) provided.`;
+      console.log(`removed '${title}'!`);
+    });
+    break;
   }
 
-  fs.copy(`./${copyTitle}`, targetFolder, (err) => {
-    if (err) throw err;
+  case "copy": {
+    if (!copyTitle) {
+      throw `invalid input(copyTitle) provided.`;
+    }
 
-    console.log(`'${title}' - rename and copy complete.`);
-  });
-} else if (action == "add") {
-  const sampleFolder = `./_sample`;
+    fs.copy(`./${copyTitle}`, targetFolder, err => {
+      if (err) throw err;
 
-  fs.copy(sampleFolder, targetFolder, (err) => {
-    if (err) throw err;
+      console.log(`copied '${title}'!`);
+    });
+    break;
+  }
 
-    console.log(`'${title}' - rename and copy complete.`);
-  });
+  case "add": {
+    const sampleFolder = `./_sample`;
 
-} else {
-  throw `unknown action, please use 'add' or 'rm' together with 'title'.`;
-  return;
+    fs.copy(sampleFolder, targetFolder, err => {
+      if (err) throw err;
+
+      console.log(`added '${title}'!`);
+    });
+
+    break;
+  }
+
+  default:
+    throw `unknown action, please use 'add'/'copy'/'rm'/'run' with a title.`;
+    return;
 }
