@@ -8,25 +8,27 @@
 
 <body>
   <div id="scope-block">
-    <input id="producer" type="text" model="giveup" />
-    <p id="consumer" bind="giveup"></p>
-    <button id="producer-btn" onclick="addSecret()"></button>
+    data producer:<input id="producer" type="text" model="giveup" />
+    data consumer: <p id="consumer" bind="giveup"></p>
+    <button id="producer-btn">add No</button>
   </div>
 </body>
 
 </html>
-<script type="module" src="my-defprop.js"></script>
-<script>
-  import VM from "my-defprop.js";
+<script type="module" src="./my-defprop.js"></script>
+<script type="module">
+  import VM from "./my-defprop.js";
   const secretVM = new VM({
     el: "#scope-block",
     data: {
-      secret: 'no',
+      giveup: 'no',
     },
   });
 
+  const producerBtn = document.querySelector('#producer-btn');
+  producerBtn.addEventListener('click', addSecret, true);
   function addSecret() {
-    secretVM.data += ' no';
+    secretVM.data.giveup += ' no';
   }
 </script>
 
