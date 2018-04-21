@@ -8,9 +8,11 @@
 
 <body>
   <div id="scope-block">
-    data producer:<input id="producer" type="text" model="giveup" />
-    data consumer: <p id="consumer" bind="giveup"></p>
-    <button id="producer-btn">add No</button>
+    data input:<input id="producer" type="text" model="giveup" />
+    <br/>
+    <button id="producer-btn">add "No" to data</button>
+    <br/><br/>
+    data result: <span id="consumer" bind="giveup"></span>
   </div>
 </body>
 
@@ -31,8 +33,3 @@
     secretVM.data.giveup += ' no';
   }
 </script>
-
-<!-- <script type="text/javascript" src="databinding-dcheck.js"></script> -->
-<!-- <script type="text/javascript" src="databinding-defprop.js"></script> -->
-<!-- <script type="text/javascript" src="databinding-proxy.js"></script> -->
-<!-- <script type="text/javascript" src="main.js"></script> -->
