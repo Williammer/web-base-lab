@@ -16,6 +16,7 @@ export default class VM {
 
       const bindDataName = node.getAttribute("bind");
       const modelDataName = node.getAttribute("model");
+      // TODO: handle other directives and node type
       if (modelDataName) {
         this._addUpdater(node, "value", modelDataName);
 
@@ -59,7 +60,9 @@ export default class VM {
       return;
     }
 
-    this._watchers[prop].forEach((updater) => {
+    // Updaters is similar to the Dep in Vue
+    const updaters = this._watchers[prop];
+    updaters.forEach(updater => {
       updater();
     });
   }
