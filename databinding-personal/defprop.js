@@ -5,14 +5,14 @@ export default class VM {
     this._watchers = {};
 
     this._observe(this._data);
-    this._parseNode(this._root);
+    this._walk(this._root);
   }
-  _parseNode(root) {
+  _walk(root) {
     const children = root.children;
 
     // Iterate array-like HTMLCollection
     Reflect.apply(Array.prototype.forEach, children, [node => {
-      this._parseNode(node);
+      this._walk(node);
 
       const bindDataName = node.getAttribute("bind");
       const modelDataName = node.getAttribute("model");
