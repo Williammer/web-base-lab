@@ -1,42 +1,46 @@
 export default class VM {
   constructor(context) {
     this._root = document.querySelector(context.el);
-    this._watchers = [];
     this._data = context.data;
+    this._watchers = {};
 
     this._observe(this._data);
-    this._parseView(this._root);
+    this._parseNode(this._root);
   }
-  _parseView(root) {
+  _parseNode(root) {
     const children = root.children;
 
     // Iterate array-like HTMLCollection
     Reflect.apply(Array.prototype.forEach, children, [node => {
+      this._parseNode(node);
+
       const bindDataName = node.getAttribute("bind");
       const modelDataName = node.getAttribute("model");
       if (modelDataName) {
-        this._watchers.push({ [modelDataName]: this._modelHandler.bind(this, node) });
+        this._addUpdater(node, "value", modelDataName);
 
-        node.addEventListener("input", ({ target: { value } }) => {
-          this._data[modelDataName] = value;
-        });
+        if (node.tagName === "INPUT") {
+          node.addEventListener("input", ({ target: { value } }) => {
+            this._data[modelDataName] = value;
+          });
+        }
       } else if (bindDataName) {
-        this._watchers.push({ [bindDataName]: this._bindHandler.bind(this, node) });
+        this._addUpdater(node, "textContent", bindDataName);
       }
     }]);
   }
   _observe(data) {
     const notify = this._notify.bind(this);
 
-    Object.keys(data).forEach((propName) => {
+    Object.keys(data).forEach((prop) => {
       // use cached value to avoid infinite loop of get/set
-      let value = data[propName];
+      let value = data[prop];
 
       if (typeof value === "object") {
         this._observe(value);
       }
 
-      Object.defineProperty(data, propName, {
+      Object.defineProperty(data, prop, {
         configurable: true,
         enumerable: true,
         get() {
@@ -45,21 +49,30 @@ export default class VM {
         },
         set(newValue) {
           value = newValue;
-          notify(propName); // TODO: change it to have each Watcher
+          notify(prop);
         }
       });
     });
   }
-  _notify(propName) {
-    this._watchers.forEach((watcher) => {
-      watcher[propName](propName); // invoke the mutation handler
-    })
+  _notify(prop) {
+    if (!this._watchers[prop]) {
+      return;
+    }
+
+    this._watchers[prop].forEach((updater) => {
+      updater();
+    });
   }
-  _bindHandler(node, propName) {
-    node.textContent = this._data[propName];
+  _addUpdater(node, attr, prop) {
+    if (!this._watchers[prop]) {
+      this._watchers[prop] = [];
+    }
+
+    this._watchers[prop].push(this._updater.bind(this, node, attr, prop));
   }
-  _modelHandler(node, propName) {
-    node.value = this._data[propName];
+  _updater(node, attr, prop) {
+    // TODO: handle deep prop
+    node[attr] = this._data[prop];
   }
   get data() {
     return this._data;
