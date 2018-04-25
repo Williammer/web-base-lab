@@ -1,14 +1,14 @@
 export default class VM {
   constructor(context) {
-    this._root = document.querySelector(context.el);
+    const root = document.querySelector(context.el);
     this._data = context.data;
     this._watchers = {};
 
     this._observe(this._data);
-    this._walk(this._root);
+    this._walk(root);
   }
-  _walk(root) {
-    const children = root.children;
+  _walk(parent) {
+    const children = parent.children;
 
     // Iterate array-like HTMLCollection
     Reflect.apply(Array.prototype.forEach, children, [node => {
