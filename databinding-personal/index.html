@@ -13,19 +13,28 @@
     <button id="producer-btn">add "No" to data</button>
     <br/><br/>
     data result: <span id="consumer" bind="giveup"></span>
+    <ul>
+      <li loop="motivations"></li>
+    </ul>
   </div>
 </body>
 
 </html>
+<script type="module" src="./vm.js"></script>
+<script type="module" src="./defprop.js"></script>
 <script type="module" src="./proxy.js"></script>
-<!-- <script type="module" src="./defprop.js"></script> -->
 <script type="module">
-  import VM from "./proxy.js";
-  // import VM from "./defprop.js";
+  import VM from "./vm.js";
+  // import defProp from "./defProp.js";
+  import proxy from "./proxy.js";
+
   const secretVM = new VM({
     el: "#scope-block",
+    // engine: defProp,
+    engine: proxy,
     data: {
       giveup: 'no',
+      motivations: ['Light', 'Love', 'Nature', 'Infinite Wisdom'],
     },
   });
 
