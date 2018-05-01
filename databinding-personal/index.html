@@ -17,9 +17,11 @@
 </body>
 
 </html>
-<script type="module" src="./defprop.js"></script>
+<script type="module" src="./proxy.js"></script>
+<!-- <script type="module" src="./defprop.js"></script> -->
 <script type="module">
-  import VM from "./defprop.js";
+  import VM from "./proxy.js";
+  // import VM from "./defprop.js";
   const secretVM = new VM({
     el: "#scope-block",
     data: {
