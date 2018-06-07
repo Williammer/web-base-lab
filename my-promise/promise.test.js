@@ -32,6 +32,13 @@ describe('Promise tests', () => {
   });
 
   describe('Promise behaviors', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+    afterEach(() => {
+      jest.clearAllTimers();
+    });
+
     it("should return promise for Promise.resolve, Promise.reject, then and catch from promise instance", () => {
       const resolver = jest.fn();
 
@@ -72,22 +79,26 @@ describe('Promise tests', () => {
       expect(rejector).toHaveBeenCalledTimes(0);
     });
 
-    it("should receive the result/error of Promise.resolve, Promise.reject from the callback param of then and catch", async () => {
+    it("should receive the result/error of Promise.resolve, Promise.reject from the callback param of then and catch", () => {
       const resolver = jest.fn();
       const rejector = jest.fn();
       const data = "data";
       const error = new Error('error');
 
-      await MyPromise.resolve(data).then(resolver);
+      MyPromise.resolve(data).then(resolver);
+      jest.advanceTimersByTime(100);
+
       expect(resolver).toHaveBeenCalledTimes(1);
       expect(resolver).toHaveBeenCalledWith(data);
 
-      await MyPromise.reject(error).catch(rejector);
+      MyPromise.reject(error).catch(rejector);
+      jest.advanceTimersByTime(100);
+
       expect(rejector).toHaveBeenCalledTimes(1);
       expect(rejector).toHaveBeenCalledWith(error);
     });
 
-    it("should resolve/reject the result/error of a promise to the callback param of then and catch", async () => {
+    it("should resolve/reject the result/error of a promise to the callback param of then and catch", () => {
       const data = "data";
       const error = new Error('error');
       const resolveExecutor = (resolve, reject) => resolve(data);
@@ -97,55 +108,62 @@ describe('Promise tests', () => {
       const promise1 = new MyPromise(resolveExecutor);
       const promise2 = new MyPromise(rejectExecutor);
 
-      await promise1.then(resolver);
+      promise1.then(resolver);
+      jest.advanceTimersByTime(100);
       expect(resolver).toHaveBeenCalledTimes(1);
       expect(resolver).toHaveBeenCalledWith(data);
 
-      await promise2.catch(rejector);
+      promise2.catch(rejector);
+      jest.advanceTimersByTime(100);
       expect(rejector).toHaveBeenCalledTimes(1);
       expect(rejector).toHaveBeenCalledWith(error);
     });
 
-    it("should invoke catch when promise is rejected", async () => {
+    it("should invoke catch when promise is rejected", () => {
       const error = new Error("error");
       const rejector = jest.fn();
-      await MyPromise.reject(error).catch(rejector);
+      MyPromise.reject(error).catch(rejector);
+      jest.advanceTimersByTime(100);
 
       expect(rejector).toHaveBeenCalledTimes(1);
       expect(rejector).toHaveBeenCalledWith(error);
     });
 
-    it("should invoke catch when promise is rejected by error", async () => {
+    it("should invoke catch when promise is rejected by error", () => {
       const error = new Error("error");
       const rejector = jest.fn();
-      await new MyPromise(() => {
+      new MyPromise(() => {
         throw error;
       }).catch(rejector);
+      jest.advanceTimersByTime(100);
 
       expect(rejector).toHaveBeenCalledTimes(1);
       expect(rejector).toHaveBeenCalledWith(error);
     });
 
-    it("should not invoke then when promise is rejected", async () => {
+    it("should not invoke then when promise is rejected", () => {
       const error = new Error("error");
       const resolver2 = jest.fn();
       const rejector2 = jest.fn();
-      await MyPromise.reject(error).then(resolver2).catch(rejector2);
+      MyPromise.reject(error).then(resolver2).catch(rejector2);
+      jest.advanceTimersByTime(100);
 
       expect(resolver2).toHaveBeenCalledTimes(0);
       expect(rejector2).toHaveBeenCalledTimes(1);
       expect(rejector2).toHaveBeenCalledWith(error);
     });
 
-    it("should chain the catch and then", async () => {
+    it.only("should chain the catch and then", () => {
       const data = 'data';
       const error = new Error("error");
       const resolver1 = jest.fn();
       const rejector1 = jest.fn((error) => error);
       const resolver2 = jest.fn(() => { throw error; });
       const rejector2 = jest.fn();
-      await MyPromise.reject(error).catch(rejector1).then(resolver1);
-      await MyPromise.resolve(data).then(resolver2).catch(rejector2);
+      MyPromise.reject(error).catch(rejector1).then(resolver1);
+      jest.advanceTimersByTime(100);
+      MyPromise.resolve(data).then(resolver2).catch(rejector2);
+      jest.advanceTimersByTime(100);
 
       expect(resolver1).toHaveBeenCalledTimes(1);
       expect(resolver1).toHaveBeenCalledWith(error);
@@ -157,37 +175,40 @@ describe('Promise tests', () => {
       expect(rejector2).toHaveBeenCalledWith(error);
     });
 
-    it("should not invoke then when promise is rejected by error", async () => {
+    it("should not invoke then when promise is rejected by error", () => {
       const error = new Error("error");
       const resolver2 = jest.fn();
       const rejector2 = jest.fn();
-      await new MyPromise(() => {
+      new MyPromise(() => {
         throw error;
       }).then(resolver2).catch(rejector2);
+      jest.advanceTimersByTime(100);
 
       expect(resolver2).toHaveBeenCalledTimes(0);
       expect(rejector2).toHaveBeenCalledTimes(1);
       expect(rejector2).toHaveBeenCalledWith(error);
     });
 
-    it("should invoke onRejected of then when promise is rejected", async () => {
+    it("should invoke onRejected of then when promise is rejected", () => {
       const error = new Error("error");
       const onFufilled = jest.fn();
       const onRejected = jest.fn();
-      await MyPromise.reject(error).then(onFufilled, onRejected);
+      MyPromise.reject(error).then(onFufilled, onRejected);
+      jest.advanceTimersByTime(100);
 
       expect(onFufilled).toHaveBeenCalledTimes(0);
       expect(onRejected).toHaveBeenCalledTimes(1);
       expect(onRejected).toHaveBeenCalledWith(error);
     });
 
-    it("should invoke onRejected of then when promise is rejected by error", async () => {
+    it("should invoke onRejected of then when promise is rejected by error", () => {
       const error = new Error("error");
       const onFufilled = jest.fn();
       const onRejected = jest.fn();
-      await new MyPromise(() => {
+      new MyPromise(() => {
         throw error;
       }).then(onFufilled, onRejected);
+      jest.advanceTimersByTime(100);
 
       expect(onFufilled).toHaveBeenCalledTimes(0);
       expect(onRejected).toHaveBeenCalledTimes(1);
