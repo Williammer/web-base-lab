@@ -2,11 +2,15 @@ function isFunction(val) {
   return typeof val === "function";
 }
 
+function isPromise(promise) {
+  return promise instanceof MyPromise;
+}
+
 function isPending(promise) {
   return promise["[[PromiseStatus]]"] === "pending";
 }
 
-function isFulfilled(promise) {
+function isResolved(promise) {
   return promise["[[PromiseStatus]]"] === "resolved";
 }
 
@@ -23,13 +27,17 @@ function nextTick(fn) {
 }
 
 /* these 2 functions are the key processor */
-function reject_(promise, error) {
+function _reject(promise, error) {
+  // TODO: hadnle when error is Promise
   promise["[[PromiseValue]]"] = error;
   promise["[[PromiseStatus]]"] = "rejected";
   promise._flush();
 }
 /* these 2 functions are the key processor */
-function fulfill_(promise, data) {
+function _fulfill(promise, data) {
+  // TODO: hadnle when data is Promise
+  if (isPromise(data)) {
+  }
   promise["[[PromiseValue]]"] = data;
   promise["[[PromiseStatus]]"] = "resolved";
   promise._flush();
@@ -37,29 +45,29 @@ function fulfill_(promise, data) {
 
 class MyPromise {
   static resolve(data) {
-    const promise = new this(dummyFn);
-    fulfill_(promise, data);
+    const promise = new MyPromise(dummyFn);
+    _fulfill(promise, data);
     return promise;
   }
 
   static reject(error) {
-    const promise = new this(dummyFn);
-    reject_(promise, error);
+    const promise = new MyPromise(dummyFn);
+    _reject(promise, error);
     return promise;
   }
 
   constructor(executor) {
     this["[[PromiseStatus]]"] = "pending";
-    this._handlers = [];
+    this._deferredHandlers = [];
 
     if (!isFunction(executor)) {
       throw new TypeError("Promise resolver undefined is not a function");
     }
 
     try {
-      executor(fulfill_.bind(null, this), reject_.bind(null, this));
+      executor(_fulfill.bind(null, this), _reject.bind(null, this));
     } catch (e) {
-      reject_(this, e);
+      _reject(this, e);
     }
   }
 
@@ -68,64 +76,79 @@ class MyPromise {
     const nextPromise = new MyPromise(dummyFn);
 
     if (isPending(this)) {
-      this._handlers.push({
+      this._deferredHandlers.push({
         nextPromise,
         onFulfilled,
-        onRejected,
+        onRejected
       });
-      return nextPromise;
-    } else {
-      this._handle(nextPromise, onFulfilled, onRejected);
       return this;
     }
+
+    if (!isResolved(this) && !isFunction(onRejected)) {
+      // promise fallover
+      return this;
+    }
+
+    this._handle(this, nextPromise, onFulfilled, onRejected);
+    return nextPromise;
   }
-  catch (onRejected) {
+
+  catch(onRejected) {
     const nextPromise = new MyPromise(dummyFn);
+
     if (isPending(this)) {
-      this._handlers.push({
+      this._deferredHandlers.push({
         nextPromise,
         onFulfilled: null,
-        onRejected,
+        onRejected
       });
-      return nextPromise;
-    } else if (isRejected(this)) {
-      this._handle(nextPromise, null, onRejected);
       return this;
     }
+
+    if (!isRejected(this)) {
+      // promise fallover
+      return this;
+    }
+
+    this._handle(this, nextPromise, null, onRejected);
+    return nextPromise;
   }
   /*
    * The Atomic async handling function
    */
-  _handle(nextPromise, onFulfilled, onRejected) {
+  _handle(context, nextPromise, onFulfilled, onRejected) {
     nextTick(() => {
       try {
-        if (isFulfilled(this)) {
+        const value = context["[[PromiseValue]]"];
+        if (isResolved(context)) {
           if (isFunction(onFulfilled)) {
-            fulfill_(nextPromise, onFulfilled(this["[[PromiseValue]]"]));
+            _fulfill(nextPromise, onFulfilled(value));
           }
-        } else if (isRejected(this)) {
+        } else if (isRejected(context)) {
           if (isFunction(onRejected)) {
-            reject_(nextPromise, onRejected(this["[[PromiseValue]]"]));
+            _fulfill(nextPromise, onRejected(value));
           }
         }
       } catch (e) {
-        reject_(nextPromise, e);
+        _reject(nextPromise, e);
       }
     });
   }
 
   _flush() {
-    while (this._handlers.length) {
+    let context = this;
+    while (this._deferredHandlers.length) {
       const {
         nextPromise,
         onFulfilled,
         onRejected
-      } = this._handlers.shift();
-      this._handle(nextPromise, onFulfilled, onRejected);
+      } = this._deferredHandlers.shift();
+
+      this._handle(context, nextPromise, onFulfilled, onRejected);
+      context = nextPromise;
     }
   }
 }
-
 
 export default MyPromise;
 // export default Promise; // compared with standard Promise

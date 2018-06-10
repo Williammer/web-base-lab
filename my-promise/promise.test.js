@@ -1,6 +1,6 @@
 import MyPromise from "./promise";
 
-describe('Promise tests', () => {
+describe("Promise tests", () => {
   describe("Promise shape", () => {
     it("should return an instance of the Promise", () => {
       const resolver = jest.fn();
@@ -22,8 +22,7 @@ describe('Promise tests', () => {
       badResolvers.forEach(resolver => {
         expect(() => {
           new MyPromise(resolver);
-        })
-          .toThrow();
+        }).toThrow();
       });
     });
 
@@ -34,7 +33,7 @@ describe('Promise tests', () => {
       expect(promise.then).toBeInstanceOf(Function);
     });
 
-    describe('Not required from Promise/A+', () => {
+    describe("Not required from Promise/A+", () => {
       it("should have static property of resolve and reject from Promise constructor", () => {
         expect(MyPromise.resolve).toBeInstanceOf(Function);
         expect(MyPromise.reject).toBeInstanceOf(Function);
@@ -49,7 +48,7 @@ describe('Promise tests', () => {
     });
   });
 
-  describe('Promise behaviors', () => {
+  describe("Promise behaviors", () => {
     beforeEach(() => {
       jest.useFakeTimers();
     });
@@ -62,7 +61,6 @@ describe('Promise tests', () => {
 
       const promise1 = new MyPromise(resolver);
       expect(promise1.then()).toBeInstanceOf(MyPromise);
-      // expect(promise1.then() === promise1).toBeFalsy(); // Not a requirement from Promise/A+
     });
 
     it("the onFulfilled/onRejected callbacks of then should receive the value/error of the promise when invoked", () => {
@@ -105,10 +103,14 @@ describe('Promise tests', () => {
 
     it("should chain then for resolved case", () => {
       const data = "data";
-      const resolveExecutor = (resolve, reject) => resolve(data);
-      const resolver1 = jest.fn((val) => val);
-      const resolver2 = jest.fn((val) => val);
-      const resolver3 = jest.fn((val) => val);
+      const resolveExecutor = (resolve, reject) => {
+        setTimeout(() => {
+          resolve(data);
+        }, 2000);
+      };
+      const resolver1 = jest.fn(val => val);
+      const resolver2 = jest.fn(val => val);
+      const resolver3 = jest.fn(val => val);
       const rejector1 = jest.fn();
       const rejector2 = jest.fn();
       const rejector3 = jest.fn();
@@ -119,7 +121,7 @@ describe('Promise tests', () => {
         .then(resolver2, rejector2)
         .then(resolver3, rejector3);
 
-      jest.advanceTimersByTime(100);
+      jest.advanceTimersByTime(2000);
 
       expect(rejector1).toHaveBeenCalledTimes(0);
       expect(rejector2).toHaveBeenCalledTimes(0);
@@ -135,10 +137,16 @@ describe('Promise tests', () => {
 
     it("should chain then for rejected case", () => {
       const error = new Error("error");
-      const rejectExecutor = (resolve, reject) => reject(error);
+      const rejectExecutor = (resolve, reject) => {
+        setTimeout(() => {
+          reject(error);
+        }, 2000);
+      };
       const resolver1 = jest.fn();
-      const rejector1 = jest.fn(error => error);
-      const resolver2 = jest.fn((val) => {
+      const rejector1 = jest.fn(error => {
+        return error;
+      });
+      const resolver2 = jest.fn(val => {
         throw val;
       });
       const rejector2 = jest.fn();
@@ -151,11 +159,12 @@ describe('Promise tests', () => {
         .then(resolver2, rejector2)
         .then(resolver3, rejector3);
 
-      jest.advanceTimersByTime(100);
+      jest.advanceTimersByTime(2000);
 
       expect(resolver1).toHaveBeenCalledTimes(0);
       expect(rejector1).toHaveBeenCalledTimes(1);
       expect(rejector1).toHaveBeenCalledWith(error);
+
       expect(rejector2).toHaveBeenCalledTimes(0);
       expect(resolver2).toHaveBeenCalledTimes(1);
       expect(resolver2).toHaveBeenCalledWith(error);
@@ -164,7 +173,7 @@ describe('Promise tests', () => {
       expect(rejector3).toHaveBeenCalledWith(error);
     });
 
-    describe('Not required from Promise/A+', () => {
+    describe("Not required from Promise/A+", () => {
       it("should return a promise from Promise.resolve, Promise.reject", () => {
         expect(MyPromise.resolve()).toBeInstanceOf(MyPromise);
         expect(MyPromise.reject()).toBeInstanceOf(MyPromise);
@@ -175,7 +184,6 @@ describe('Promise tests', () => {
 
         const promise1 = new MyPromise(resolver);
         expect(promise1.catch()).toBeInstanceOf(MyPromise);
-        // expect(promise1.catch() === promise1).toBeFalsy(); // Not a requirement from Promise/A+
       });
 
       it("the callbacks of then/catch should receive the value/reason from Promise.resolve, Promise.reject", () => {
@@ -299,7 +307,6 @@ describe('Promise tests', () => {
         expect(rejector2).toHaveBeenCalledTimes(1);
         expect(rejector2).toHaveBeenCalledWith(error);
       });
-
     });
   });
 });
