@@ -14,6 +14,10 @@ function isRejected(promise) {
   return promise["[[PromiseStatus]]"] === "rejected";
 }
 
+function dummyFn() {
+  return () => {};
+}
+
 function nextTick(fn) {
   setTimeout(fn, 0);
 }
@@ -33,13 +37,13 @@ function fulfill_(promise, data) {
 
 class MyPromise {
   static resolve(data) {
-    const promise = new this();
+    const promise = new this(dummyFn);
     fulfill_(promise, data);
     return promise;
   }
 
   static reject(error) {
-    const promise = new this();
+    const promise = new this(dummyFn);
     reject_(promise, error);
     return promise;
   }
@@ -48,18 +52,20 @@ class MyPromise {
     this["[[PromiseStatus]]"] = "pending";
     this._handlers = [];
 
-    if (isFunction(executor)) {
-      try {
-        executor(fulfill_.bind(null, this), reject_.bind(null, this));
-      } catch (e) {
-        reject_(this, e);
-      }
+    if (!isFunction(executor)) {
+      throw new TypeError("Promise resolver undefined is not a function");
+    }
+
+    try {
+      executor(fulfill_.bind(null, this), reject_.bind(null, this));
+    } catch (e) {
+      reject_(this, e);
     }
   }
 
   // use as the register function
   then(onFulfilled, onRejected) {
-    const nextPromise = new MyPromise();
+    const nextPromise = new MyPromise(dummyFn);
 
     if (isPending(this)) {
       this._handlers.push({
@@ -74,7 +80,7 @@ class MyPromise {
     }
   }
   catch (onRejected) {
-    const nextPromise = new MyPromise();
+    const nextPromise = new MyPromise(dummyFn);
     if (isPending(this)) {
       this._handlers.push({
         nextPromise,
@@ -87,7 +93,9 @@ class MyPromise {
       return this;
     }
   }
-
+  /*
+   * The Atomic async handling function
+   */
   _handle(nextPromise, onFulfilled, onRejected) {
     nextTick(() => {
       try {
