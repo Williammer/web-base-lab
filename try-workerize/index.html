@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Experiment</title>
+  <!-- <script type="module" src="greenlet.my.js"></script>
+  <script type="module" src="index.js"></script> -->
+  <!-- <script type="module" src="worker.js"></script> -->
+  <script type="module">
+    function workize(code) {
+      return URL.createObjectURL(new Blob([code]));
+    }
+
+    const code = `
+      self.addEventListener('message', ({ data }) => {
+        console.log('[in worker] received: ', data);
+        self.postMessage("respond: "+ Math.random());
+      });`;
+
+    const worker = new Worker(workize(code));
+    worker.addEventListener('message', ({ data }) => {
+      console.log('------From worker: ', data);
+    });
+
+    worker.postMessage('get me a random num!');
+  </script>
+</head>
+
+<body>
+</body>
+
+</html>
