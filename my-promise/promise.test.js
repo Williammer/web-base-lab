@@ -66,9 +66,13 @@ describe("Promise tests", () => {
     it("the onFulfilled/onRejected callbacks of then should receive the value/error of the promise when invoked", () => {
       const data = "data";
       const error = new Error("error");
-      const resolveExecutor = (resolve, reject) => resolve(data);
+      const resolveExecutor = (resolve, reject) => {
+        return resolve(data);
+      };
       const rejectExecutor = (resolve, reject) => reject(error);
-      const resolver = jest.fn();
+      const resolver = jest.fn(val => {
+        return val;
+      });
       const rejector = jest.fn();
       const promise1 = new MyPromise(resolveExecutor);
       const promise2 = new MyPromise(rejectExecutor);
@@ -171,6 +175,104 @@ describe("Promise tests", () => {
       expect(resolver3).toHaveBeenCalledTimes(0);
       expect(rejector3).toHaveBeenCalledTimes(1);
       expect(rejector3).toHaveBeenCalledWith(error);
+    });
+
+    it("should resolve what's resolved from the inner promise", () => {
+      const innerPromiseExecutor = resolve => {
+        setTimeout(() => {
+          resolve("data from inner promise");
+        }, 2000);
+      };
+      const promise0 = new MyPromise(innerPromiseExecutor);
+      const outerPromiseExecutor = resolve => {
+        setTimeout(() => {
+          resolve(promise0);
+        }, 2000);
+      };
+      const resolver1 = jest.fn();
+      const rejector1 = jest.fn();
+      const promise = new MyPromise(outerPromiseExecutor);
+
+      promise.then(resolver1, rejector1);
+
+      jest.advanceTimersByTime(4000);
+      expect(rejector1).toHaveBeenCalledTimes(0);
+      expect(resolver1).toHaveBeenCalledTimes(1);
+      expect(resolver1).toHaveBeenCalledWith("data from inner promise");
+    });
+
+    it("should reject what's rejected from the inner promise", () => {
+      const error = new Error("error from inner");
+      const innerPromiseExecutor = (resolve, reject) => {
+        setTimeout(() => {
+          reject(error);
+        }, 2000);
+      };
+      const promise0 = new MyPromise(innerPromiseExecutor);
+      const outerPromiseExecutor = (resolve, reject) => {
+        setTimeout(() => {
+          reject(promise0);
+        }, 2000);
+      };
+      const resolver1 = jest.fn();
+      const rejector1 = jest.fn();
+      const promise = new MyPromise(outerPromiseExecutor);
+
+      promise.then(resolver1, rejector1);
+
+      jest.advanceTimersByTime(4000);
+      expect(resolver1).toHaveBeenCalledTimes(0);
+      expect(rejector1).toHaveBeenCalledTimes(1);
+      expect(rejector1).toHaveBeenCalledWith(error);
+    });
+
+    it("should reject even when try to resolve a rejected inner promise", () => {
+      const error = new Error("error from inner");
+      const innerPromiseExecutor = (resolve, reject) => {
+        setTimeout(() => {
+          reject(error);
+        }, 2000);
+      };
+      const promise0 = new MyPromise(innerPromiseExecutor);
+      const outerPromiseExecutor = (resolve, reject) => {
+        setTimeout(() => {
+          resolve(promise0);
+        }, 2000);
+      };
+      const resolver1 = jest.fn();
+      const rejector1 = jest.fn();
+      const promise = new MyPromise(outerPromiseExecutor);
+
+      promise.then(resolver1, rejector1);
+
+      jest.advanceTimersByTime(4000);
+      expect(resolver1).toHaveBeenCalledTimes(0);
+      expect(rejector1).toHaveBeenCalledTimes(1);
+      expect(rejector1).toHaveBeenCalledWith(error);
+    });
+
+    it.skip("should reject what's resolved from the inner promise", () => {
+      const innerPromiseExecutor = (resolve, reject) => {
+        setTimeout(() => {
+          resolve("error");
+        }, 2000);
+      };
+      const promise0 = new MyPromise(innerPromiseExecutor);
+      const outerPromiseExecutor = (resolve, reject) => {
+        setTimeout(() => {
+          reject(promise0);
+        }, 2000);
+      };
+      const resolver1 = jest.fn();
+      const rejector1 = jest.fn();
+      const promise = new MyPromise(outerPromiseExecutor);
+
+      promise.then(resolver1, rejector1);
+
+      jest.advanceTimersByTime(4000);
+      expect(resolver1).toHaveBeenCalledTimes(0);
+      expect(rejector1).toHaveBeenCalledTimes(1);
+      expect(rejector1).toHaveBeenCalledWith(error);
     });
 
     describe("Not required from Promise/A+", () => {

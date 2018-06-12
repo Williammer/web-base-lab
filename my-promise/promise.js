@@ -26,21 +26,27 @@ function nextTick(fn) {
   setTimeout(fn, 0);
 }
 
-/* these 2 functions are the key processor */
-function _reject(promise, error) {
-  // TODO: hadnle when error is Promise
-  promise["[[PromiseValue]]"] = error;
-  promise["[[PromiseStatus]]"] = "rejected";
+function _update(method, promise, data) {
+  if (isPromise(data)) {
+    return data.then(
+      resolvedData => {
+        _fulfill(promise, resolvedData);
+      },
+      rejectedData => {
+        _reject(promise, rejectedData);
+      }
+    );
+  }
+
+  promise["[[PromiseValue]]"] = data;
+  promise["[[PromiseStatus]]"] = method;
   promise._flush();
 }
-/* these 2 functions are the key processor */
 function _fulfill(promise, data) {
-  // TODO: hadnle when data is Promise
-  if (isPromise(data)) {
-  }
-  promise["[[PromiseValue]]"] = data;
-  promise["[[PromiseStatus]]"] = "resolved";
-  promise._flush();
+  return _update("resolved", promise, data);
+}
+function _reject(promise, error) {
+  return _update("rejected", promise, error);
 }
 
 class MyPromise {
