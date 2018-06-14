@@ -1,27 +1,24 @@
+const STATUS = Symbol.for("[[PromiseStatus]]");
+const VALUE = Symbol.for("[[PromiseValue]]");
+
 function isFunction(val) {
   return typeof val === "function";
 }
-
 function isPromise(promise) {
   return promise instanceof MyPromise;
 }
-
 function isPending(promise) {
-  return promise["[[PromiseStatus]]"] === "pending";
+  return promise[STATUS] === "pending";
 }
-
 function isResolved(promise) {
-  return promise["[[PromiseStatus]]"] === "resolved";
+  return promise[STATUS] === "resolved";
 }
-
 function isRejected(promise) {
-  return promise["[[PromiseStatus]]"] === "rejected";
+  return promise[STATUS] === "rejected";
 }
-
 function dummyFn() {
   return () => {};
 }
-
 function nextTick(fn) {
   setTimeout(fn, 0);
 }
@@ -32,15 +29,46 @@ function _update(method, promise, data) {
     return data.then(updater, updater);
   }
 
-  promise["[[PromiseValue]]"] = data;
-  promise["[[PromiseStatus]]"] = method;
-  promise._flush();
+  promise[VALUE] = data;
+  promise[STATUS] = method;
+  _flush(promise);
 }
 function _fulfill(promise, data) {
   return _update("resolved", promise, data);
 }
 function _reject(promise, error) {
   return _update("rejected", promise, error);
+}
+function _handle(context, nextPromise, onFulfilled, onRejected) {
+  nextTick(() => {
+    try {
+      const value = context[VALUE];
+      if (isResolved(context)) {
+        if (isFunction(onFulfilled)) {
+          _fulfill(nextPromise, onFulfilled(value));
+        }
+      } else if (isRejected(context)) {
+        if (isFunction(onRejected)) {
+          _fulfill(nextPromise, onRejected(value));
+        }
+      }
+    } catch (e) {
+      _reject(nextPromise, e);
+    }
+  });
+}
+function _flush(promise) {
+  let curPromise = promise;
+  while (promise._deferredHandlers.length) {
+    const {
+      nextPromise,
+      onFulfilled,
+      onRejected
+    } = promise._deferredHandlers.shift();
+
+    _handle(curPromise, nextPromise, onFulfilled, onRejected);
+    curPromise = nextPromise;
+  }
 }
 
 class MyPromise {
@@ -57,7 +85,7 @@ class MyPromise {
   }
 
   constructor(executor) {
-    this["[[PromiseStatus]]"] = "pending";
+    this[STATUS] = "pending";
     this._deferredHandlers = [];
 
     if (!isFunction(executor)) {
@@ -71,7 +99,6 @@ class MyPromise {
     }
   }
 
-  // use as the register function
   then(onFulfilled, onRejected) {
     const nextPromise = new MyPromise(dummyFn);
 
@@ -84,11 +111,11 @@ class MyPromise {
       return this;
     }
     if (!isResolved(this) && !isFunction(onRejected)) {
-      // promise fallover
+      // fallover this then
       return this;
     }
 
-    this._handle(this, nextPromise, onFulfilled, onRejected);
+    _handle(this, nextPromise, onFulfilled, onRejected);
     return nextPromise;
   }
 
@@ -104,47 +131,12 @@ class MyPromise {
       return this;
     }
     if (!isRejected(this)) {
-      // promise fallover
+      // fallover this catch
       return this;
     }
 
-    this._handle(this, nextPromise, null, onRejected);
+    _handle(this, nextPromise, null, onRejected);
     return nextPromise;
-  }
-  /*
-   * The Atomic async handling function
-   */
-  _handle(context, nextPromise, onFulfilled, onRejected) {
-    nextTick(() => {
-      try {
-        const value = context["[[PromiseValue]]"];
-        if (isResolved(context)) {
-          if (isFunction(onFulfilled)) {
-            _fulfill(nextPromise, onFulfilled(value));
-          }
-        } else if (isRejected(context)) {
-          if (isFunction(onRejected)) {
-            _fulfill(nextPromise, onRejected(value));
-          }
-        }
-      } catch (e) {
-        _reject(nextPromise, e);
-      }
-    });
-  }
-
-  _flush() {
-    let context = this;
-    while (this._deferredHandlers.length) {
-      const {
-        nextPromise,
-        onFulfilled,
-        onRejected
-      } = this._deferredHandlers.shift();
-
-      this._handle(context, nextPromise, onFulfilled, onRejected);
-      context = nextPromise;
-    }
   }
 }
 
