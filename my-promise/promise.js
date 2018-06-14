@@ -28,14 +28,8 @@ function nextTick(fn) {
 
 function _update(method, promise, data) {
   if (isPromise(data)) {
-    return data.then(
-      resolvedData => {
-        _fulfill(promise, resolvedData);
-      },
-      rejectedData => {
-        _reject(promise, rejectedData);
-      }
-    );
+    const updater = _update.bind(null, method, promise);
+    return data.then(updater, updater);
   }
 
   promise["[[PromiseValue]]"] = data;
@@ -89,7 +83,6 @@ class MyPromise {
       });
       return this;
     }
-
     if (!isResolved(this) && !isFunction(onRejected)) {
       // promise fallover
       return this;
@@ -110,7 +103,6 @@ class MyPromise {
       });
       return this;
     }
-
     if (!isRejected(this)) {
       // promise fallover
       return this;
@@ -157,4 +149,3 @@ class MyPromise {
 }
 
 export default MyPromise;
-// export default Promise; // compared with standard Promise

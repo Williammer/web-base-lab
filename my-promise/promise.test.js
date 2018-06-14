@@ -226,7 +226,7 @@ describe("Promise tests", () => {
       expect(rejector1).toHaveBeenCalledWith(error);
     });
 
-    it("should reject even when try to resolve a rejected inner promise", () => {
+    it("should resolve the rejected content from the inner promise", () => {
       const error = new Error("error from inner");
       const innerPromiseExecutor = (resolve, reject) => {
         setTimeout(() => {
@@ -246,12 +246,12 @@ describe("Promise tests", () => {
       promise.then(resolver1, rejector1);
 
       jest.advanceTimersByTime(4000);
-      expect(resolver1).toHaveBeenCalledTimes(0);
-      expect(rejector1).toHaveBeenCalledTimes(1);
-      expect(rejector1).toHaveBeenCalledWith(error);
+      expect(rejector1).toHaveBeenCalledTimes(0);
+      expect(resolver1).toHaveBeenCalledTimes(1);
+      expect(resolver1).toHaveBeenCalledWith(error);
     });
 
-    it.skip("should reject what's resolved from the inner promise", () => {
+    it("should reject what's resolved from the inner promise", () => {
       const innerPromiseExecutor = (resolve, reject) => {
         setTimeout(() => {
           resolve("error");
@@ -272,7 +272,7 @@ describe("Promise tests", () => {
       jest.advanceTimersByTime(4000);
       expect(resolver1).toHaveBeenCalledTimes(0);
       expect(rejector1).toHaveBeenCalledTimes(1);
-      expect(rejector1).toHaveBeenCalledWith(error);
+      expect(rejector1).toHaveBeenCalledWith("error");
     });
 
     describe("Not required from Promise/A+", () => {
