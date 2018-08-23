@@ -3,7 +3,7 @@ export function debounce(fn, wait, options = {}) {
   let waitTimer;
   let startTime;
 
-  const debouncedFn = () => {
+  return () => {
     const clear = () => {
       clearTimeout(waitTimer);
       waitTimer = null;
@@ -34,8 +34,6 @@ export function debounce(fn, wait, options = {}) {
 
     return start();
   };
-
-  return debouncedFn;
 }
 
 export function throttle(fn, wait, options = {}) {
