@@ -37,18 +37,17 @@ describe("utils", () => {
       expect(fn).toHaveBeenCalledTimes(1);
     });
 
-    it("should be able to clear the debounce", () => {
+    it("should be able to cancel the debounce", () => {
       const fn = jest.fn();
       const debouncedFn = debounce(fn, 1000);
 
       debouncedFn();
-      const clear = debouncedFn();
       debouncedFn();
 
       clock.tick(300);
       debouncedFn();
 
-      clear();
+      debouncedFn.cancel();
 
       clock.tick(1000);
       expect(fn).toHaveBeenCalledTimes(0);
@@ -188,18 +187,17 @@ describe("utils", () => {
       expect(fn).toHaveBeenCalledTimes(1);
     });
 
-    it("should be able to clear the throttle", () => {
+    it("should be able to cancel the throttle", () => {
       const fn = jest.fn();
       const throttledFn = throttle(fn, 1000);
 
       throttledFn();
-      const clear = throttledFn();
       throttledFn();
 
       clock.tick(300);
       throttledFn();
 
-      clear();
+      throttledFn.cancel();
 
       clock.tick(1000);
       expect(fn).toHaveBeenCalledTimes(0);

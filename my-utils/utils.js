@@ -1,39 +1,38 @@
-export function debounce(fn, wait, options = {}) {
-  let { leading = false, maxWait } = options;
+export function debounce(fn, wait, { leading = false, maxWait } = {}) {
+  let lead = leading;
   let waitTimer;
   let startTime;
+  const clear = () => {
+    clearTimeout(waitTimer);
+    waitTimer = null;
+  };
+  const start = (...args) => {
+    startTime = Date.now();
+    waitTimer = setTimeout(() => {
+      fn(...args);
+      clear();
+      lead = leading;
+    }, wait);
+  };
 
-  return () => {
-    const clear = () => {
-      clearTimeout(waitTimer);
-      waitTimer = null;
-    };
-    const start = () => {
-      startTime = Date.now();
-      waitTimer = setTimeout(() => {
-        fn();
-        clear();
-        leading = options.leading;
-      }, wait);
-      return clear;
-    };
-
-    if (leading) {
-      fn();
-      leading = false;
-      return clear;
+  const debounced = (...args) => {
+    if (lead) {
+      fn(...args);
+      lead = false;
+      return;
     }
 
     if (waitTimer) {
       if (maxWait > 0 && Date.now() - startTime <= maxWait) {
-        return clear;
+        return;
       }
       clear();
-      return start();
     }
-
-    return start();
+    start(...args);
   };
+  debounced.cancel = clear;
+
+  return debounced;
 }
 
 export function throttle(fn, wait, options = {}) {
