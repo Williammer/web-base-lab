@@ -26,7 +26,7 @@ switch (action) {
     break;
   }
 
-  case "copy": {
+  case "cp": {
     if (!copyTitle) {
       throw `invalid input(copyTitle) provided.`;
     }
@@ -52,6 +52,6 @@ switch (action) {
   }
 
   default:
-    throw `unknown action, please use 'add'/'copy'/'rm'/'run' with a title.`;
+    throw `unknown action, please use 'add'/'cp'/'rm'/'run' with a title.`;
     return;
 }
