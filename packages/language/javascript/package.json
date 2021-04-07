@@ -1,0 +1,27 @@
+{
+  "name": "es6-lab",
+  "version": "1.0.0",
+  "description": "lab for es6 and beyond",
+  "main": "index.html",
+  "scripts": {
+    "build": "flow-remove-types src/ -d dist/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Williammer/es6-lab.git"
+  },
+  "keywords": [
+    "es6"
+  ],
+  "author": "williammer",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Williammer/es6-lab/issues"
+  },
+  "homepage": "https://github.com/Williammer/es6-lab#readme",
+  "devDependencies": {
+    "flow-bin": "^0.46.0",
+    "flow-remove-types": "^1.2.1"
+  }
+}
